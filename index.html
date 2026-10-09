@@ -517,6 +517,12 @@ select.bims-input { box-shadow: var(--shadow-field); }
       <div class="bims-page-content" style="flex:1">
         <div class="imp-wrap">
 
+          <!-- Tipo fijo (patrón de Crear Asiento Contable, sin caret: no editable en el MVP) -->
+          <div class="bims-context-bar">
+            <div class="bims-context-bar__item"><div class="bims-context-bar__label">Tipo de Documento</div><div class="bims-context-bar__value">Asiento de Apertura</div></div>
+            <div class="bims-context-bar__spacer"></div>
+          </div>
+
           <!-- Cabecera + archivo -->
           <section class="bims-card" style="margin-bottom:18px">
             <div class="bims-card__body" style="padding:16px 17px 4px">
@@ -524,7 +530,7 @@ select.bims-input { box-shadow: var(--shadow-field); }
                 <div class="bims-field">
                   <label class="bims-label">Fecha</label>
                   <div class="bims-input-group">
-                    <input class="bims-input" value="2026-10-01">
+                    <input class="bims-input" id="fecha" placeholder="AAAA-MM-DD">
                     <span class="bims-input-group__addon"><svg width="13" height="13" viewBox="0 0 24 24" fill="#333"><path d="M7 2h2v2h6V2h2v2h4v18H3V4h4zm-2 8v10h14V10z"/></svg></span>
                   </div>
                 </div>
@@ -680,6 +686,7 @@ function render() {
     </tr>`).join('') + (filter === 'all' ? `
     <tr class="is-total is-total-caps"><td colspan="7">Totales</td><td class="num">${gs(deb)}</td><td class="num">${gs(cre)}</td>${state === 'error' ? '<td></td>' : ''}</tr>` : '');
 
+  $('fecha').value = state === 'empty' ? '' : '2026-10-01';
   $('btnImport').disabled = state !== 'ok';
   $('footMsg').textContent = state === 'empty' ? 'Subí el archivo para ver la vista previa'
     : state === 'error' ? 'Para importar, corregí las observaciones' : 'Se va a crear 1 asiento pendiente de 13 líneas';
