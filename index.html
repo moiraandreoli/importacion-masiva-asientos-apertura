@@ -412,6 +412,8 @@ select.bims-input { box-shadow: var(--shadow-field); }
   border: 1px dashed #b9c6cc; border-radius: var(--radius-sm); background: var(--bims-bg-subtle);
   color: var(--bims-text-secondary); cursor: pointer;
 }
+#formCard.is-disabled { opacity:.55; pointer-events:none; }
+.imp-drop.is-disabled { opacity:.5; cursor:not-allowed; pointer-events:none; }
 .imp-drop:hover { border-color: var(--bims-link); }
 .imp-drop small { color: var(--bims-text-muted); font-size: var(--fs-sm); }
 
@@ -517,6 +519,11 @@ select.bims-input { box-shadow: var(--shadow-field); }
       <div class="bims-page-content" style="flex:1">
         <div class="imp-wrap">
 
+          <div class="bims-alert bims-alert--danger is-hidden" id="alertDup">
+            <b>Esta empresa ya tiene un asiento de apertura</b>
+            Se registró el 01-09-2026. Para no duplicar saldos, eliminá ese asiento antes de importar uno nuevo. <a href="#" style="color:inherit;text-decoration:underline">Ver asiento 0011530</a>
+          </div>
+
           <!-- Tipo fijo (patrón de Crear Asiento Contable, sin caret: no editable en el MVP) -->
           <div class="bims-context-bar">
             <div class="bims-context-bar__item"><div class="bims-context-bar__label">Tipo de Documento</div><div class="bims-context-bar__value">Asiento de Apertura</div></div>
@@ -524,7 +531,7 @@ select.bims-input { box-shadow: var(--shadow-field); }
           </div>
 
           <!-- Cabecera + archivo -->
-          <section class="bims-card" style="margin-bottom:18px">
+          <section class="bims-card" id="formCard" style="margin-bottom:18px">
             <div class="bims-card__body" style="padding:16px 17px 4px">
               <div class="imp-grid">
                 <div class="bims-field">
@@ -617,6 +624,7 @@ select.bims-input { box-shadow: var(--shadow-field); }
 <div class="proto-bar">
   <span>Estado</span>
   <button data-s="empty" class="on">Sin archivo</button>
+  <button data-s="dup">Apertura existente</button>
   <button data-s="error">Con errores</button>
   <button data-s="ok">Listo</button>
 </div>
@@ -654,9 +662,13 @@ function render() {
   const cre = data.reduce((a, r) => a + (r.k || 0), 0);
   const dif = deb - cre, errs = data.filter(r => r.err).length;
 
-  $('drop').classList.toggle('is-hidden', state !== 'empty');
-  $('file').classList.toggle('is-hidden', state === 'empty');
-  $('preview').classList.toggle('is-hidden', state === 'empty');
+  const pre = state === 'empty' || state === 'dup';
+  $('drop').classList.toggle('is-hidden', !pre);
+  $('drop').classList.toggle('is-disabled', state === 'dup');
+  $('alertDup').classList.toggle('is-hidden', state !== 'dup');
+  $('formCard').classList.toggle('is-disabled', state === 'dup');
+  $('file').classList.toggle('is-hidden', pre);
+  $('preview').classList.toggle('is-hidden', pre);
   $('alertErr').classList.toggle('is-hidden', state !== 'error');
   $('alertOk').classList.toggle('is-hidden', state !== 'ok');
   $('filter').classList.toggle('is-hidden', state !== 'error');
@@ -686,9 +698,10 @@ function render() {
     </tr>`).join('') + (filter === 'all' ? `
     <tr class="is-total is-total-caps"><td colspan="7">Totales</td><td class="num">${gs(deb)}</td><td class="num">${gs(cre)}</td>${state === 'error' ? '<td></td>' : ''}</tr>` : '');
 
-  $('fecha').value = state === 'empty' ? '' : '2026-10-01';
+  $('fecha').value = state === 'empty' ? '' : state === 'dup' ? '' : '2026-10-01';
   $('btnImport').disabled = state !== 'ok';
   $('footMsg').textContent = state === 'empty' ? 'Subí el archivo para ver la vista previa'
+    : state === 'dup' ? 'Para importar, eliminá la apertura existente'
     : state === 'error' ? 'Para importar, corregí las observaciones' : 'Se va a crear 1 asiento pendiente de 13 líneas';
 }
 
